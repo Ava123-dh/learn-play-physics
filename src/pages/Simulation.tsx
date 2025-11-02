@@ -99,125 +99,117 @@ const Simulation = () => {
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Left Side - Question and Input */}
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="text-2xl mb-2">{currentSimulation.title}</CardTitle>
-                    <CardDescription>{currentSimulation.description}</CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="p-4 bg-muted rounded-lg">
-                  <h3 className="font-semibold mb-2">Question:</h3>
-                  <p className="text-foreground">{currentSimulation.question}</p>
-                </div>
+      <div className="container mx-auto px-4 py-8 space-y-8">
+        {/* Top - Large Simulation */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-2xl">{currentSimulation.title}</CardTitle>
+            <CardDescription>{currentSimulation.description}</CardDescription>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="w-full" style={{ height: '70vh', minHeight: '500px' }}>
+              <iframe
+                src={currentSimulation.iframeUrl}
+                className="w-full h-full border-0 rounded-b-lg"
+                title={currentSimulation.title}
+                allowFullScreen
+              />
+            </div>
+          </CardContent>
+        </Card>
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Your Answer:</label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="text"
-                      value={answer}
-                      onChange={(e) => setAnswer(e.target.value)}
-                      placeholder="Enter your answer..."
-                      disabled={isCorrect === true}
-                      onKeyPress={(e) => e.key === 'Enter' && !isCorrect && checkAnswer()}
-                      className="text-lg"
-                    />
-                    {currentSimulation.unit && (
-                      <div className="flex items-center px-3 bg-muted rounded-md">
-                        <span className="text-sm font-medium">{currentSimulation.unit}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
+        {/* Bottom - Question and Answer Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Your Challenge</CardTitle>
+            <CardDescription>Use the simulation above to find the answer</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="p-4 bg-muted rounded-lg">
+              <h3 className="font-semibold mb-2">Question:</h3>
+              <p className="text-foreground">{currentSimulation.question}</p>
+            </div>
 
-                {isCorrect !== null && (
-                  <div className={`p-4 rounded-lg flex items-start gap-3 ${
-                    isCorrect ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'
-                  }`}>
-                    {isCorrect ? (
-                      <>
-                        <CheckCircle2 className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <p className="font-semibold">Correct!</p>
-                          <p className="text-sm opacity-90">Great work! You can move to the next simulation.</p>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <XCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <p className="font-semibold">Incorrect</p>
-                          <p className="text-sm opacity-90">Try using the simulation to find the answer.</p>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                )}
-
-                <div className="flex gap-2">
-                  <Button 
-                    onClick={checkAnswer} 
-                    disabled={!answer || isCorrect === true}
-                    className="flex-1"
-                  >
-                    Submit Answer
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowHint(!showHint)}
-                    className="gap-2"
-                  >
-                    <Lightbulb className="w-4 h-4" />
-                    Hint
-                  </Button>
-                </div>
-
-                {showHint && (
-                  <div className="p-4 bg-accent/10 border border-accent/20 rounded-lg">
-                    <p className="text-sm"><strong>Hint:</strong> {currentSimulation.hint}</p>
-                  </div>
-                )}
-
-                {isCorrect && (
-                  <Button 
-                    onClick={nextSimulation}
-                    className="w-full gap-2"
-                    size="lg"
-                  >
-                    {currentSimulation.id < simulations.length ? 'Next Simulation' : 'Complete'}
-                    <ArrowRight className="w-4 h-4" />
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Right Side - Simulation */}
-          <Card className="lg:sticky lg:top-24 h-fit">
-            <CardHeader>
-              <CardTitle>Interactive Simulation</CardTitle>
-              <CardDescription>Use this simulation to find the answer</CardDescription>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="aspect-video w-full">
-                <iframe
-                  src={currentSimulation.iframeUrl}
-                  className="w-full h-full border-0 rounded-b-lg"
-                  title={currentSimulation.title}
-                  allowFullScreen
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Your Answer:</label>
+              <div className="flex gap-2">
+                <Input
+                  type="text"
+                  value={answer}
+                  onChange={(e) => setAnswer(e.target.value)}
+                  placeholder="Enter your answer..."
+                  disabled={isCorrect === true}
+                  onKeyPress={(e) => e.key === 'Enter' && !isCorrect && checkAnswer()}
+                  className="text-lg"
                 />
+                {currentSimulation.unit && (
+                  <div className="flex items-center px-3 bg-muted rounded-md">
+                    <span className="text-sm font-medium">{currentSimulation.unit}</span>
+                  </div>
+                )}
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+
+            {isCorrect !== null && (
+              <div className={`p-4 rounded-lg flex items-start gap-3 ${
+                isCorrect ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'
+              }`}>
+                {isCorrect ? (
+                  <>
+                    <CheckCircle2 className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="font-semibold">Correct!</p>
+                      <p className="text-sm opacity-90">Great work! You can move to the next simulation.</p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="font-semibold">Incorrect</p>
+                      <p className="text-sm opacity-90">Try using the simulation to find the answer.</p>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
+            <div className="flex gap-2">
+              <Button 
+                onClick={checkAnswer} 
+                disabled={!answer || isCorrect === true}
+                className="flex-1"
+              >
+                Submit Answer
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowHint(!showHint)}
+                className="gap-2"
+              >
+                <Lightbulb className="w-4 h-4" />
+                Hint
+              </Button>
+            </div>
+
+            {showHint && (
+              <div className="p-4 bg-accent/10 border border-accent/20 rounded-lg">
+                <p className="text-sm"><strong>Hint:</strong> {currentSimulation.hint}</p>
+              </div>
+            )}
+
+            {isCorrect && (
+              <Button 
+                onClick={nextSimulation}
+                className="w-full gap-2"
+                size="lg"
+              >
+                {currentSimulation.id < simulations.length ? 'Next Simulation' : 'Complete'}
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

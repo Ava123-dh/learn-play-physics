@@ -5,9 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, ArrowRight, CheckCircle2, Lightbulb, XCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Lightbulb, XCircle, BookOpen } from "lucide-react";
 import { simulations } from "@/data/simulations";
 import { toast } from "sonner";
+import { TutorialDialog } from "@/components/TutorialDialog";
 
 const Simulation = () => {
   const { id } = useParams();
@@ -16,6 +17,7 @@ const Simulation = () => {
   const [showHint, setShowHint] = useState(false);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [attempts, setAttempts] = useState(0);
+  const [showSolution, setShowSolution] = useState(false);
 
   const currentSimulation = simulations.find(sim => sim.id === Number(id));
   const progress = currentSimulation ? (currentSimulation.id / simulations.length) * 100 : 0;
@@ -25,6 +27,7 @@ const Simulation = () => {
     setShowHint(false);
     setIsCorrect(null);
     setAttempts(0);
+    setShowSolution(false);
   }, [id]);
 
   if (!currentSimulation) {
@@ -54,17 +57,25 @@ const Simulation = () => {
       correct = userAnswer === correctAnswer;
     }
 
+    const newAttempts = attempts + 1;
     setIsCorrect(correct);
-    setAttempts(prev => prev + 1);
+    setAttempts(newAttempts);
 
     if (correct) {
       toast.success("Correct! Well done! 🎉", {
         description: "You can now move to the next simulation."
       });
     } else {
-      toast.error("Not quite right. Try again!", {
-        description: "Use the simulation to find the answer."
-      });
+      if (newAttempts >= 3) {
+        setShowSolution(true);
+        toast.error("Answer revealed after 3 attempts", {
+          description: "Check the solution below to learn the steps."
+        });
+      } else {
+        toast.error("Not quite right. Try again!", {
+          description: `Use the simulation to find the answer. (Attempt ${newAttempts}/3)`
+        });
+      }
     }
   };
 
@@ -83,10 +94,13 @@ const Simulation = () => {
       {/* Header */}
       <header className="border-b bg-card/50 backdrop-blur sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Button variant="ghost" onClick={() => navigate("/")} className="gap-2">
-            <ArrowLeft className="w-4 h-4" />
-            Home
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" onClick={() => navigate("/")} className="gap-2">
+              <ArrowLeft className="w-4 h-4" />
+              Home
+            </Button>
+            <TutorialDialog />
+          </div>
           <div className="flex-1 max-w-md mx-4">
             <Progress value={progress} className="h-2" />
             <p className="text-sm text-muted-foreground text-center mt-2">
@@ -198,7 +212,29 @@ const Simulation = () => {
               </div>
             )}
 
-            {isCorrect && (
+            {showSolution && (
+              <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg space-y-3">
+                <div className="flex items-start gap-2">
+                  <BookOpen className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="font-semibold text-primary mb-2">Solution Steps:</p>
+                    <ol className="space-y-2 text-sm">
+                      {currentSimulation.solution.map((step, index) => (
+                        <li key={index} className="flex gap-2">
+                          <span className="font-medium text-primary">{index + 1}.</span>
+                          <span>{step}</span>
+                        </li>
+                      ))}
+                    </ol>
+                    <p className="mt-3 font-semibold text-primary">
+                      Answer: {currentSimulation.answer} {currentSimulation.unit}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {(isCorrect || showSolution) && (
               <Button 
                 onClick={nextSimulation}
                 className="w-full gap-2"

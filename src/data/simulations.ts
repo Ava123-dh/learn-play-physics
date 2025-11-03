@@ -105,7 +105,7 @@ export const modules: Module[] = [
         question: "If the dog skater starts at 8m height, what is the K.E at 3m? Do not change friction and gravity settings. Round to nearest whole number.",
         answer: "2881 J",
         hint: "Use K.E formula: K.E = 0.5mv², find v at 3m using energy conservation.",
-        unit: "m/s",
+        unit: "J",
         points: 10,
         solution: [
           "Drag the skater to 8m height",
@@ -158,7 +158,7 @@ export const modules: Module[] = [
       },
       {
         id: 2,
-        question: "If you double the length to 2.0 m, what happens to the period? (Enter the new period)",
+        question: "If you double the length to 2.0 m, what happens to the period? (Enter the new period)(Round to 1 decimal). Do not change mass, friction or gravity settings.",
         answer: "2.8",
         hint: "The period increases by √2 when length doubles.",
         unit: "s",
@@ -217,7 +217,7 @@ export const modules: Module[] = [
         question: " An applied force of 200N to the right is acting on a fridge, considering a friction force of 100N acting against the motion what is the acceleration of the fridge?",
         answer: "0.5",
         hint: "Net force = ma, so Applied force = ma + friction",
-        unit: "N",
+        unit: "m/s²",
         points: 10,
         solution: [
           "Set object to fridge",
@@ -230,16 +230,17 @@ export const modules: Module[] = [
       },
       {
         id: 3,
-        question: "If you apply 300N to a 200kg object, what's the acceleration?",
-        answer: "1.5",
-        hint: "Use a = F/m",
-        unit: "m/s²",
+        question: "Find the mass of the mystery object if a force of 50N is applied",
+        answer: "50",
+        hint: "Use F = ma. Apply 300N force and observe the acceleration.",
+        unit: "kg",
         points: 10,
         solution: [
-          "Set mass to 200kg",
-          "Apply 300N force",
-          "Observe acceleration meter",
-          "a = F/m = 300/200 = 1.5 m/s²"
+          "Set mass to gift box (mystery object)",
+          "Apply 50N force",
+          "Observe acceleration meter (should be 1 m/s²)",
+          "Calculate mass: m = F/a = 50/1 = 50 kg",
+          "Confirm with observed acceleration"
         ]
       }
     ]

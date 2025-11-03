@@ -9,7 +9,13 @@ const Index = () => {
   const { totalPoints, isModuleUnlocked, getModuleCompletedCount } = useProgress();
 
   return (
-    <div className="min-h-screen bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url(${phetBg})` }}>
+    <div className="min-h-screen relative">
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30" 
+        style={{ backgroundImage: `url(${phetBg})` }}
+      />
+      <div className="absolute inset-0 bg-background/60" />
+      <div className="relative z-10">
       {/* Hero Section */}
       <header className="container mx-auto px-4 pt-16 pb-12 text-center">
         <div className="inline-flex items-center gap-2 mb-6 px-5 py-2.5 rounded-full bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20">
@@ -97,6 +103,7 @@ const Index = () => {
           Powered by PhET Interactive Simulations from University of Colorado Boulder
         </p>
       </footer>
+      </div>
     </div>
   );
 };

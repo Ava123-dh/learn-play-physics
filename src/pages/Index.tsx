@@ -3,12 +3,19 @@ import { ArrowRight, Sparkles, Trophy } from "lucide-react";
 import { modules } from "@/data/simulations";
 import { ModuleCard } from "@/components/ModuleCard";
 import { useProgress } from "@/hooks/useProgress";
+import phetBg from "@/assets/phet-bg.png";
 
 const Index = () => {
   const { totalPoints, isModuleUnlocked, getModuleCompletedCount } = useProgress();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
+    <div className="min-h-screen relative">
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30" 
+        style={{ backgroundImage: `url(${phetBg})` }}
+      />
+      <div className="absolute inset-0 bg-background/60" />
+      <div className="relative z-10">
       {/* Hero Section */}
 
       <header className="container mx-auto px-4 pt-16 pb-12 text-center">
@@ -97,6 +104,7 @@ const Index = () => {
           Powered by PhET Interactive Simulations from University of Colorado Boulder
         </p>
       </footer>
+      </div>
     </div>
   );
 };

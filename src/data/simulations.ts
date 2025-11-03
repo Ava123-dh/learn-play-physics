@@ -214,17 +214,18 @@ export const modules: Module[] = [
       },
       {
         id: 2,
-        question: "With friction on, how much force is needed to move a 50kg object with 2 m/s² acceleration if friction is 100N?",
-        answer: "200",
+        question: " An applied force of 200N to the right is acting on a fridge, considering a friction force of 100N acting against the motion what is the acceleration of the fridge?",
+        answer: "0.5",
         hint: "Net force = ma, so Applied force = ma + friction",
         unit: "N",
         points: 10,
         solution: [
-          "Set mass to 50kg",
-          "Turn friction on",
-          "Net force needed = 50kg × 2 m/s² = 100N",
-          "Applied force = Net force + Friction",
-          "Applied force = 100N + 100N = 200N"
+          "Set object to fridge",
+          "Drag to apply 200N force to the right",
+          "Note friction force of 100N acting left",
+          "Calculate net force: 200N - 100N = 100N",
+          "Calculate acceleration: a = F/m = 100/200 = 0.5 m/s²",
+          "Observe acceleration meter to confirm"
         ]
       },
       {

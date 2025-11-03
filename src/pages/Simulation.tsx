@@ -1,247 +1,297 @@
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, ArrowRight, CheckCircle2, Lightbulb, XCircle, BookOpen } from "lucide-react";
-import { simulations } from "@/data/simulations";
-import { toast } from "sonner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Home, Lightbulb, CheckCircle2, XCircle, ArrowRight, Trophy } from "lucide-react";
+import { modules } from "@/data/simulations";
 import { TutorialDialog } from "@/components/TutorialDialog";
+import { toast } from "@/hooks/use-toast";
+import { useProgress } from "@/hooks/useProgress";
+import Confetti from "react-confetti";
+import { useWindowSize } from "@/hooks/use-window-size";
 
 const Simulation = () => {
-  const { id } = useParams();
+  const { id, questionId } = useParams();
   const navigate = useNavigate();
-  const [answer, setAnswer] = useState("");
+  const [userAnswer, setUserAnswer] = useState("");
   const [showHint, setShowHint] = useState(false);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [attempts, setAttempts] = useState(0);
   const [showSolution, setShowSolution] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const { width, height } = useWindowSize();
+  
+  const { addPoints, isQuestionCompleted, totalPoints, getModuleCompletedCount } = useProgress();
 
-  const currentSimulation = simulations.find(sim => sim.id === Number(id));
-  const progress = currentSimulation ? (currentSimulation.id / simulations.length) * 100 : 0;
+  const module = modules.find((m) => m.id === Number(id));
+  const currentQuestionIndex = Number(questionId) - 1;
+  const question = module?.questions[currentQuestionIndex];
+
+  const isCompleted = question ? isQuestionCompleted(module!.id, question.id) : false;
+  const moduleCompletedCount = module ? getModuleCompletedCount(module.id) : 0;
 
   useEffect(() => {
-    setAnswer("");
+    setUserAnswer("");
     setShowHint(false);
     setIsCorrect(null);
     setAttempts(0);
     setShowSolution(false);
-  }, [id]);
+    setShowConfetti(false);
+  }, [id, questionId]);
 
-  if (!currentSimulation) {
+  if (!module || !question) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold mb-4">Simulation not found</h2>
-          <Button onClick={() => navigate("/")}>Return Home</Button>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/5">
+        <Card className="max-w-md">
+          <CardContent className="pt-6 text-center">
+            <XCircle className="w-16 h-16 mx-auto mb-4 text-destructive" />
+            <h2 className="text-2xl font-bold mb-4">Question Not Found</h2>
+            <Link to="/">
+              <Button>
+                <Home className="mr-2 w-4 h-4" />
+                Back to Home
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   const checkAnswer = () => {
-    const userAnswer = answer.trim().toLowerCase();
-    const correctAnswer = currentSimulation.answer.toLowerCase();
-    
-    // Allow for small numerical variations (within 10%)
-    const numericUser = parseFloat(userAnswer);
-    const numericCorrect = parseFloat(correctAnswer);
-    
+    const normalizedUserAnswer = userAnswer.trim().toLowerCase();
+    const normalizedCorrectAnswer = question.answer.toLowerCase();
+
+    const isNumeric = !isNaN(Number(normalizedUserAnswer)) && !isNaN(Number(normalizedCorrectAnswer));
+
     let correct = false;
-    if (!isNaN(numericUser) && !isNaN(numericCorrect)) {
-      const tolerance = Math.abs(numericCorrect * 0.1);
-      correct = Math.abs(numericUser - numericCorrect) <= tolerance;
+    if (isNumeric) {
+      const userNum = parseFloat(normalizedUserAnswer);
+      const correctNum = parseFloat(normalizedCorrectAnswer);
+      const tolerance = Math.abs(correctNum * 0.1);
+      correct = Math.abs(userNum - correctNum) <= tolerance;
     } else {
-      correct = userAnswer === correctAnswer;
+      correct = normalizedUserAnswer === normalizedCorrectAnswer;
     }
 
-    const newAttempts = attempts + 1;
     setIsCorrect(correct);
+    const newAttempts = attempts + 1;
     setAttempts(newAttempts);
 
-    if (correct) {
-      toast.success("Correct! Well done! 🎉", {
-        description: "You can now move to the next simulation."
+    if (correct && !isCompleted) {
+      addPoints(module.id, question.id, question.points);
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 5000);
+      
+      toast({
+        title: "Correct! 🎉",
+        description: `You earned ${question.points} points! Total: ${totalPoints + question.points} points`,
+      });
+    } else if (correct) {
+      toast({
+        title: "Already Completed",
+        description: "You've already earned points for this question.",
       });
     } else {
-      if (newAttempts >= 3) {
-        setShowSolution(true);
-        toast.error("Answer revealed after 3 attempts", {
-          description: "Check the solution below to learn the steps."
-        });
-      } else {
-        toast.error("Not quite right. Try again!", {
-          description: `Use the simulation to find the answer. (Attempt ${newAttempts}/3)`
-        });
-      }
+      toast({
+        title: "Not quite right",
+        description: `Try again! Attempts: ${newAttempts}/3`,
+        variant: "destructive",
+      });
+    }
+
+    if (newAttempts >= 3 && !correct) {
+      setShowSolution(true);
+      toast({
+        title: "Solution Revealed",
+        description: "Review the steps below to understand the answer.",
+      });
     }
   };
 
-  const nextSimulation = () => {
-    const nextId = currentSimulation.id + 1;
-    if (nextId <= simulations.length) {
-      navigate(`/simulation/${nextId}`);
+  const nextQuestion = () => {
+    if (currentQuestionIndex < module.questions.length - 1) {
+      navigate(`/simulation/${module.id}/${currentQuestionIndex + 2}`);
     } else {
-      toast.success("Congratulations! You've completed all simulations! 🎊");
+      const currentModuleIndex = modules.findIndex(m => m.id === module.id);
+      if (currentModuleIndex < modules.length - 1) {
+        const completedCount = getModuleCompletedCount(module.id);
+        if (completedCount >= 2) {
+          toast({
+            title: "Module Complete! 🎊",
+            description: "You've unlocked the next module!",
+          });
+        }
+      }
       navigate("/");
     }
   };
 
+  const progressPercentage = ((currentQuestionIndex + 1) / module.questions.length) * 100;
+  const canProgressToNext = moduleCompletedCount >= 2;
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
+      {showConfetti && <Confetti width={width} height={height} recycle={false} numberOfPieces={500} />}
+      
       {/* Header */}
-      <header className="border-b bg-card/50 backdrop-blur sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" onClick={() => navigate("/")} className="gap-2">
-              <ArrowLeft className="w-4 h-4" />
-              Home
-            </Button>
-            <TutorialDialog />
+      <header className="bg-card/80 backdrop-blur-sm border-b border-border/50 sticky top-0 z-40">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between mb-4">
+            <Link to="/">
+              <Button variant="ghost" size="sm">
+                <Home className="w-4 h-4 mr-2" />
+                Home
+              </Button>
+            </Link>
+            
+            <div className="flex items-center gap-4">
+              <Badge variant="secondary" className="flex items-center gap-2 px-4 py-2">
+                <Trophy className="w-4 h-4" />
+                {totalPoints} points
+              </Badge>
+              <TutorialDialog />
+            </div>
           </div>
-          <div className="flex-1 max-w-md mx-4">
-            <Progress value={progress} className="h-2" />
-            <p className="text-sm text-muted-foreground text-center mt-2">
-              Simulation {currentSimulation.id} of {simulations.length}
-            </p>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <h1 className="font-bold text-lg">{module.title}</h1>
+              <span className="text-muted-foreground">
+                Question {currentQuestionIndex + 1} of {module.questions.length}
+              </span>
+            </div>
+            <Progress value={progressPercentage} className="h-2" />
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>Progress: {moduleCompletedCount}/3 completed</span>
+              <span className={canProgressToNext ? "text-success font-semibold" : ""}>
+                {canProgressToNext ? "✓ Ready for next module" : "Need 2/3 to unlock next"}
+              </span>
+            </div>
           </div>
-          <Badge variant="outline" className="text-sm">
-            Attempts: {attempts}
-          </Badge>
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8 space-y-8">
-        {/* Top - Large Simulation */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl">{currentSimulation.title}</CardTitle>
-            <CardDescription>{currentSimulation.description}</CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="w-full" style={{ height: '70vh', minHeight: '500px' }}>
-              <iframe
-                src={currentSimulation.iframeUrl}
-                className="w-full h-full border-0 rounded-b-lg"
-                title={currentSimulation.title}
-                allowFullScreen
-              />
-            </div>
-          </CardContent>
+      {/* Simulation */}
+      <div className="container mx-auto px-4 py-6">
+        <Card className="mb-6 overflow-hidden border-2">
+          <iframe
+            src={module.iframeUrl}
+            className="w-full h-[70vh] min-h-[500px]"
+            title={module.title}
+            allowFullScreen
+          />
         </Card>
 
-        {/* Bottom - Question and Answer Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Your Challenge</CardTitle>
-            <CardDescription>Use the simulation above to find the answer</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="p-4 bg-muted rounded-lg">
-              <h3 className="font-semibold mb-2">Question:</h3>
-              <p className="text-foreground">{currentSimulation.question}</p>
-            </div>
+        {/* Question Section */}
+        <Card className="border-2">
+          <CardContent className="pt-6 space-y-6">
+            <div>
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex-1">
+                  <h2 className="text-xl font-bold mb-2">{question.question}</h2>
+                  {question.unit && (
+                    <Badge variant="outline">Answer in {question.unit}</Badge>
+                  )}
+                </div>
+                <Badge variant={isCompleted ? "default" : "secondary"} className="ml-4">
+                  {isCompleted ? (
+                    <>
+                      <CheckCircle2 className="w-4 h-4 mr-1" />
+                      Completed
+                    </>
+                  ) : (
+                    `${question.points} points`
+                  )}
+                </Badge>
+              </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Your Answer:</label>
               <div className="flex gap-2">
                 <Input
                   type="text"
-                  value={answer}
-                  onChange={(e) => setAnswer(e.target.value)}
-                  placeholder="Enter your answer..."
-                  disabled={isCorrect === true}
-                  onKeyPress={(e) => e.key === 'Enter' && !isCorrect && checkAnswer()}
+                  placeholder="Enter your answer"
+                  value={userAnswer}
+                  onChange={(e) => setUserAnswer(e.target.value)}
+                  onKeyPress={(e) => e.key === "Enter" && checkAnswer()}
                   className="text-lg"
+                  disabled={isCorrect === true}
                 />
-                {currentSimulation.unit && (
-                  <div className="flex items-center px-3 bg-muted rounded-md">
-                    <span className="text-sm font-medium">{currentSimulation.unit}</span>
-                  </div>
-                )}
+                <Button onClick={checkAnswer} disabled={!userAnswer || isCorrect === true} size="lg">
+                  Submit
+                </Button>
+                <Button variant="outline" onClick={() => setShowHint(!showHint)} size="lg">
+                  <Lightbulb className="w-4 h-4" />
+                </Button>
               </div>
             </div>
 
-            {isCorrect !== null && (
-              <div className={`p-4 rounded-lg flex items-start gap-3 ${
-                isCorrect ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'
-              }`}>
-                {isCorrect ? (
+            {/* Feedback */}
+            {isCorrect === true && (
+              <Alert className="border-success bg-success/10">
+                <CheckCircle2 className="w-4 h-4 text-success" />
+                <AlertDescription className="text-success font-semibold">
+                  Correct! {!isCompleted && `You earned ${question.points} points!`}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {isCorrect === false && (
+              <Alert variant="destructive">
+                <XCircle className="w-4 h-4" />
+                <AlertDescription>
+                  Incorrect. Attempts: {attempts}/3
+                  {attempts >= 3 && " - Solution revealed below"}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* Hint */}
+            {showHint && (
+              <Alert className="border-secondary bg-secondary/10">
+                <Lightbulb className="w-4 h-4 text-secondary" />
+                <AlertDescription className="text-secondary-foreground">
+                  <strong>Hint:</strong> {question.hint}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* Solution */}
+            {(showSolution || isCompleted) && (
+              <Alert className="border-primary bg-primary/10">
+                <AlertDescription>
+                  <div className="space-y-2">
+                    <p className="font-bold text-lg">Solution Steps:</p>
+                    <ol className="list-decimal list-inside space-y-1 text-sm">
+                      {question.solution.map((step, index) => (
+                        <li key={index}>{step}</li>
+                      ))}
+                    </ol>
+                    <p className="font-bold mt-4">
+                      Correct Answer: {question.answer} {question.unit}
+                    </p>
+                  </div>
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* Next Button */}
+            {(isCorrect === true || showSolution) && (
+              <Button onClick={nextQuestion} size="lg" className="w-full">
+                {currentQuestionIndex < module.questions.length - 1 ? (
                   <>
-                    <CheckCircle2 className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="font-semibold">Correct!</p>
-                      <p className="text-sm opacity-90">Great work! You can move to the next simulation.</p>
-                    </div>
+                    Next Question
+                    <ArrowRight className="ml-2 w-4 h-4" />
                   </>
                 ) : (
                   <>
-                    <XCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="font-semibold">Incorrect</p>
-                      <p className="text-sm opacity-90">Try using the simulation to find the answer.</p>
-                    </div>
+                    Complete Module
+                    <CheckCircle2 className="ml-2 w-4 h-4" />
                   </>
                 )}
-              </div>
-            )}
-
-            <div className="flex gap-2">
-              <Button 
-                onClick={checkAnswer} 
-                disabled={!answer || isCorrect === true}
-                className="flex-1"
-              >
-                Submit Answer
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setShowHint(!showHint)}
-                className="gap-2"
-              >
-                <Lightbulb className="w-4 h-4" />
-                Hint
-              </Button>
-            </div>
-
-            {showHint && (
-              <div className="p-4 bg-accent/10 border border-accent/20 rounded-lg">
-                <p className="text-sm"><strong>Hint:</strong> {currentSimulation.hint}</p>
-              </div>
-            )}
-
-            {showSolution && (
-              <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg space-y-3">
-                <div className="flex items-start gap-2">
-                  <BookOpen className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                  <div className="flex-1">
-                    <p className="font-semibold text-primary mb-2">Solution Steps:</p>
-                    <ol className="space-y-2 text-sm">
-                      {currentSimulation.solution.map((step, index) => (
-                        <li key={index} className="flex gap-2">
-                          <span className="font-medium text-primary">{index + 1}.</span>
-                          <span>{step}</span>
-                        </li>
-                      ))}
-                    </ol>
-                    <p className="mt-3 font-semibold text-primary">
-                      Answer: {currentSimulation.answer} {currentSimulation.unit}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {(isCorrect || showSolution) && (
-              <Button 
-                onClick={nextSimulation}
-                className="w-full gap-2"
-                size="lg"
-              >
-                {currentSimulation.id < simulations.length ? 'Next Simulation' : 'Complete'}
-                <ArrowRight className="w-4 h-4" />
               </Button>
             )}
           </CardContent>

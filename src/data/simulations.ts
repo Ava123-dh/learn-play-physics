@@ -29,7 +29,7 @@ export const modules: Module[] = [
     questions: [
       {
         id: 1,
-        question: "Fire a projectile at 45° angle with initial speed of 18 m/s. What is the approximate range (horizontal distance) in meters?",
+        question: "Fire a projectile at 45° angle with initial speed of 18 m/s. What is the approximate range (horizontal distance) in meters? (Assume air resistance is negligible and It is launched from 1m above the ground)",
         answer: "33",
         hint: "Use the simulation to fire at 45° with 18 m/s initial speed and measure the range.",
         unit: "m",
@@ -45,7 +45,7 @@ export const modules: Module[] = [
       },
       {
         id: 2,
-        question: "Fire a projectile at 30° angle with initial speed of 20 m/s. What is the approximate maximum height in meters?",
+        question: "Fire a projectile at 30° angle with initial speed of 20 m/s. What is the approximate maximum height in meters? (Assume air resistance is negligible and It is launched from 1m above the ground)",
         answer: "5",
         hint: "Set angle to 30° and speed to 20 m/s, then observe the peak height.",
         unit: "m",
@@ -86,7 +86,7 @@ export const modules: Module[] = [
     questions: [
       {
         id: 1,
-        question: "Starting from 5m height, what is the approximate speed at the bottom (ground level) in m/s? (Use g=10 m/s²)",
+        question: "Starting from 5m height, what is the approximate speed at the bottom (ground level) in m/s? (Use g=10 m/s²), enable the speed display. Do not change friction and gravity settings.",
         answer: "10",
         hint: "Drop the skater from 5m and observe the speed at the bottom. Remember: PE = KE",
         unit: "m/s",
@@ -102,16 +102,18 @@ export const modules: Module[] = [
       },
       {
         id: 2,
-        question: "If the skater starts at 8m height, what is the speed at 3m height in m/s?",
-        answer: "10",
-        hint: "Use energy conservation: the change in height is 5m.",
+        question: "If the dog skater starts at 8m height, what is the K.E at 3m? Do not change friction and gravity settings. Round to nearest whole number.",
+        answer: "2881 J",
+        hint: "Use K.E formula: K.E = 0.5mv², find v at 3m using energy conservation.",
         unit: "m/s",
         points: 10,
         solution: [
           "Drag the skater to 8m height",
           "Release and watch as they pass through 3m height",
-          "The change in height is 5m (8m - 3m)",
-          "Speed at 3m = √(2g×5) = √(2×10×5) = 10 m/s"
+          "Note the speed at 3m from the speed display",
+          "Calculate K.E using K.E = 0.5mv²",
+          "Assuming mass m = 60kg (dog skater mass), and speed v at 3m is approximately 9.91 m/s",
+          "K.E = 0.5 × 50 × (9.91)² ≈ 2881 J"
         ]
       },
       {
@@ -141,7 +143,7 @@ export const modules: Module[] = [
     questions: [
       {
         id: 1,
-        question: "Set the pendulum length to 1.0 m. What is the approximate period in seconds? (Round to 1 decimal)",
+        question: "Set the pendulum length to 1.0 m. What is the approximate period in seconds? (Round to 1 decimal). Do not change mass, friction or gravity settings.",
         answer: "2.0",
         hint: "Set length to 1m and measure the time for one complete swing.",
         unit: "s",

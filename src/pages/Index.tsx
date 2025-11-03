@@ -10,6 +10,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
       {/* Hero Section */}
+
       <header className="container mx-auto px-4 pt-16 pb-12 text-center">
         <div className="inline-flex items-center gap-2 mb-6 px-5 py-2.5 rounded-full bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20">
           <Sparkles className="w-4 h-4 text-primary" />

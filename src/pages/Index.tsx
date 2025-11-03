@@ -3,12 +3,13 @@ import { ArrowRight, Sparkles, Trophy } from "lucide-react";
 import { modules } from "@/data/simulations";
 import { ModuleCard } from "@/components/ModuleCard";
 import { useProgress } from "@/hooks/useProgress";
+import phetBg from "@/assets/phet-bg.png";
 
 const Index = () => {
   const { totalPoints, isModuleUnlocked, getModuleCompletedCount } = useProgress();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
+    <div className="min-h-screen bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url(${phetBg})` }}>
       {/* Hero Section */}
       <header className="container mx-auto px-4 pt-16 pb-12 text-center">
         <div className="inline-flex items-center gap-2 mb-6 px-5 py-2.5 rounded-full bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20">

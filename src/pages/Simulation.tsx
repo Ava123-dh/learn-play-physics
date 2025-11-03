@@ -6,8 +6,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Home, Lightbulb, CheckCircle2, XCircle, ArrowRight, Trophy } from "lucide-react";
+import { Home, Lightbulb, CheckCircle2, XCircle, ArrowRight, Trophy, RotateCcw } from "lucide-react";
 import { modules } from "@/data/simulations";
+import { Header } from "@/components/Header";
 import { TutorialDialog } from "@/components/TutorialDialog";
 import { toast } from "@/hooks/use-toast";
 import { useProgress } from "@/hooks/useProgress";
@@ -27,7 +28,7 @@ const Simulation = () => {
   const [showConfetti, setShowConfetti] = useState(false);
   const { width, height } = useWindowSize();
   
-  const { addPoints, isQuestionCompleted, totalPoints, getModuleCompletedCount } = useProgress();
+  const { addPoints, isQuestionCompleted, totalPoints, getModuleCompletedCount, resetProgress } = useProgress();
 
   const module = modules.find((m) => m.id === Number(id));
   const currentQuestionIndex = Number(questionId) - 1;
@@ -140,43 +141,25 @@ const Simulation = () => {
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
       {showConfetti && <Confetti width={width} height={height} recycle={false} numberOfPieces={500} />}
       
-      {/* Header */}
-      <header className="bg-card/80 backdrop-blur-sm border-b border-border/50 sticky top-0 z-40">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-4">
-            <Link to="/">
-              <Button variant="ghost" size="sm">
-                <Home className="w-4 h-4 mr-2" />
-                Home
-              </Button>
-            </Link>
-            
-            <div className="flex items-center gap-4">
-              <Badge variant="secondary" className="flex items-center gap-2 px-4 py-2">
-                <Trophy className="w-4 h-4" />
-                {totalPoints} points
-              </Badge>
-              <TutorialDialog />
-            </div>
-          </div>
+      <Header />
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <h1 className="font-bold text-lg">{module.title}</h1>
-              <span className="text-muted-foreground">
-                Question {currentQuestionIndex + 1} of {module.questions.length}
-              </span>
-            </div>
-            <Progress value={progressPercentage} className="h-2" />
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>Progress: {moduleCompletedCount}/3 completed</span>
-              <span className={canProgressToNext ? "text-success font-semibold" : ""}>
-                {canProgressToNext ? "✓ Ready for next module" : "Need 2/3 to unlock next"}
-              </span>
-            </div>
+      <div className="container mx-auto px-4 py-4">
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-sm">
+            <h1 className="font-bold text-lg">{module.title}</h1>
+            <span className="text-muted-foreground">
+              Question {currentQuestionIndex + 1} of {module.questions.length}
+            </span>
+          </div>
+          <Progress value={progressPercentage} className="h-2" />
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span>Progress: {moduleCompletedCount}/3 completed</span>
+            <span className={canProgressToNext ? "text-success font-semibold" : ""}>
+              {canProgressToNext ? "✓ Ready for next module" : "Need 2/3 to unlock next"}
+            </span>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Simulation */}
       <div className="container mx-auto px-4 py-6">
